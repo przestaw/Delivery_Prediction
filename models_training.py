@@ -28,7 +28,7 @@ def train_model(target, data, model_type='xgb', random_seed=42, randomized=True)
     elif model_type == 'tree':
         model = DecisionTreeRegressor()
         params = {
-            'max_depth': [2, 3, 4, 5, 6, 7, 8, 9],
+            'max_depth': [2, 3, 4, 5, 6, 7, 8],
             'random_state': [random_seed],
             'criterion': ['mse', 'friedman_mse', 'mae'],
             'splitter': ['best', 'random']
@@ -63,22 +63,24 @@ def calc_metrics(predictions, test_y):
     avg = mean_absolute_error(test_y, predictions)
     avg_sqr = mean_squared_error(test_y, predictions)
 
-    return err, avg, avg_sqr
+    return [err, avg, avg_sqr]
 
 
-def compare_models(mdl1, mdl2, test_X, test_y):
-    test_predictions_1 = mdl1.predict(test_X)
-    test_predictions_2 = mdl2.predict(test_X)
+def compare_models(models, test_X, test_y):
+    test_predictions = []
+    for mdl in models:
+        test_predictions.append(mdl.predict(test_X))
 
     # TODO : DataFrame or table
-    err_1, avg_1, avg_sqr_1 = calc_metrics(test_predictions_1, test_y)
-    err_2, avg_2, avg_sqr_2 = calc_metrics(test_predictions_2, test_y)
+    err = []
+    for mdl_pred in test_predictions:
+        err.append(calc_metrics(mdl_pred, test_y))
 
+    error = pd.DataFrame.from_records(err, columns=['max error', 'avg error', 'avg sqr error'],
+                                      index=['mdl-' + str(index + 1) for index in range(len(models))])
     ret = pd.DataFrame.from_records(test_X)
     ret['target'] = test_y
-    ret['val model 1'] = test_predictions_1
-    ret['val model 2'] = test_predictions_2
+    for index, mdl in enumerate(models):
+        ret['mdl-' + str(index + 1)] = test_predictions[index]
 
-    print(ret)  # TODO : remove
-
-    return ret
+    return ret, error

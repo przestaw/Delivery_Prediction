@@ -1,7 +1,20 @@
 from sklearn.model_selection import train_test_split
-
 import data_loader as data
 import models_training as models
+
+
+def train_models(x_train, x_test, y_train, y_test):
+    model_xgb, params_xgb = models.train_model(y_train, x_train, model_type='xgb')
+    print(params_xgb)
+
+    model_tree, params_tree = models.train_model(y_train, x_train, model_type='tree')
+    print(params_tree)
+
+    model_knn, params_knn = models.train_model(y_train, x_train, model_type='knn')
+    print(params_knn)
+
+    models.compare_models([model_knn, model_tree, model_xgb], x_test, y_test)
+
 
 if __name__ == "__main__":
     dataset = data.obtain_dataset_table()
@@ -14,15 +27,4 @@ if __name__ == "__main__":
     x_train, x_test, y_train, y_test = \
         train_test_split(data, target, test_size=0.2, random_state=0)
 
-    model_xgb, params_xgb = models.train_model(y_train, x_train, model_type='xgb')
-    print(params_xgb)
-
-    model_tree, params_tree = models.train_model(y_train, x_train, model_type='tree')
-    print(params_tree)
-
-    model_knn, params_knn = models.train_model(y_train, x_train, model_type='knn')
-    print(params_knn)
-
-    models.compare_models(model_tree, model_xgb, x_test, y_test)
-    models.compare_models(model_tree, model_knn, x_test, y_test)
-    models.compare_models(model_knn, model_xgb, x_test, y_test)
+    train_models(x_train, x_test, y_train, y_test)

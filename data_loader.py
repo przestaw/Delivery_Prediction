@@ -99,7 +99,7 @@ def obtain_dataset_table():
     for col in columns:
         merged_data = merged_data.drop(col, axis=1)
 
-    merged_data = clean_nan_rows(merged_data, print_stats=True)
+    merged_data = clean_nan_rows(merged_data, print_stats=False)
 
     return merged_data
 

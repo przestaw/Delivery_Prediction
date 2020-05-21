@@ -21,14 +21,14 @@ def train_model(target, data, model_type='xgb', random_seed=42, randomized=True)
             'max_depth': [4, 5, 6, 7],
             'min_child_weight': [4],
             'silent': [1],
-            'n_estimators': [300, 450, 600],
+            'n_estimators': [200, 320, 450, 600],
             'seed': [random_seed]
         }
-        n_iter = 20
+        n_iter = 28
     elif model_type == 'tree':
         model = DecisionTreeRegressor()
         params = {
-            'max_depth': [2, 3, 4, 5, 6, 7, 8],
+            'max_depth': [2, 3, 4, 5, 6, 7, 8, 9],
             'random_state': [random_seed],
             'criterion': ['mse', 'friedman_mse', 'mae'],
             'splitter': ['best', 'random']
@@ -71,7 +71,6 @@ def compare_models(models, test_X, test_y):
     for mdl in models:
         test_predictions.append(mdl.predict(test_X))
 
-    # TODO : DataFrame or table
     err = []
     for mdl_pred in test_predictions:
         err.append(calc_metrics(mdl_pred, test_y))

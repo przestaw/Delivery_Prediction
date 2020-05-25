@@ -106,15 +106,21 @@ def obtain_dataset_table():
 def code_labels(dataset):
     # code labels
     le_cat = preprocessing.LabelEncoder()
-    le_cat.fit(np.unique(np.array(dataset['category'])))
+    categories = np.unique(np.array(dataset['category']))
+    np.append(categories, 'missing')
+    le_cat.fit(categories)
     dataset['category'] = le_cat.transform(dataset['category'])
 
     le_subcat = preprocessing.LabelEncoder()
-    le_subcat.fit(np.unique(np.array(dataset['subcategory'])))
+    subcategories = np.unique(np.array(dataset['subcategory']))
+    np.append(subcategories, 'missing')
+    le_subcat.fit(subcategories)
     dataset['subcategory'] = le_subcat.transform(dataset['subcategory'])
 
     le_city = preprocessing.LabelEncoder()
-    le_city.fit(np.unique(np.array(dataset['city'])))
+    cities = np.unique(np.array(dataset['city']))
+    np.append(cities, 'missing')
+    le_city.fit(cities)
     dataset['city'] = le_city.transform(dataset['city'])
 
     return dataset, le_cat, le_subcat, le_city

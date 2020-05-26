@@ -1,19 +1,13 @@
 import json
 
 from flask import Flask, jsonify, request, abort
-import data_loader as data
 import numpy as np
-from models_training import train_model
+
+from model import TreeModelHolder
 
 app = Flask(__name__)
 
-dataset = data.obtain_dataset_table()
-dataset, le_cat, le_subcat, le_city = data.code_labels(dataset)
-
-target = dataset['delivery_total_time_hours']
-data = dataset.drop(['delivery_total_time', 'delivery_total_time_hours'], axis=1)
-
-model, _ = train_model(target, data, model_type='tree', randomized=True)
+model = TreeModelHolder()
 
 
 @app.route('/', methods=['GET'])
@@ -45,29 +39,36 @@ def delivery_time():
         }), 418  # TODO remove joke
 
     # prepare query for model
-    query = np.array([np.nan, np.nan, np.nan, np.nan, np.nan])
 
-    query[0] = request.json['delivery_company']
-    query[1] = le_city.transform([request.json['city']])[0]
-    query[2] = request.json['price']
+    company = request.json['delivery_company']
+    city = request.json['city']
+    price = request.json['price']
 
     # optional? FIXME
+    category, subcategory = None, None
     if 'category' in request.json:
-        query[3] = le_cat.transform([request.json['category']])[0]
+        category = request.json['category']
     else:
-        query[3] = le_cat.transform(['missing'])[0]
+        category = 'missing'
 
     if 'subcategory' in request.json:
-        query[4] = le_subcat.transform([request.json['subcategory']])[0]
+        subcategory = request.json['subcategory']
     else:
-        query[4] = le_subcat.transform(['missing'])[0]
+        subcategory = 'missing'
 
-    prediction = model.predict(query.reshape(1, -1))
+    prediction = model.make_prediction(company, city, price, category, subcategory)
 
     return jsonify({
-        'prediction': prediction[0],
+        'prediction': prediction,
         'status': 'running'
     }), 200
+
+
+@app.route('/api/history', methods=['GET'])
+def delivery_time_history():
+    history = model.get_predictions()
+
+    return history.to_json(orient='records'), 200
 
 
 if __name__ == '__main__':

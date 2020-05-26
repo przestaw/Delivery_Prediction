@@ -28,12 +28,12 @@ def train_model(target, data, model_type='xgb', random_seed=42, randomized=True)
     elif model_type == 'tree':
         model = DecisionTreeRegressor()
         params = {
-            'max_depth': [2, 3, 4, 5, 6, 7, 8, 9],
+            'max_depth': [3, 4, 5, 6, 7, 8, 9],
             'random_state': [random_seed],
             'criterion': ['mse', 'friedman_mse', 'mae'],
             'splitter': ['best', 'random']
         }
-        n_iter = 30  # ~half of possible combinations
+        n_iter = 22  # ~half of possible combinations
     elif model_type == 'knn':
         model = KNeighborsRegressor()
         params = {

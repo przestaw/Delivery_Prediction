@@ -1,13 +1,9 @@
-import json
-
 from flask import Flask, jsonify, request, abort
-import numpy as np
-
-from model import TreeModelHolder
+from model import ModelHolder
 
 app = Flask(__name__)
 
-model = TreeModelHolder()
+model = ModelHolder()
 
 
 @app.route('/', methods=['GET'])
@@ -28,7 +24,7 @@ def delivery_time():
 
     missing_info = []
     for it in ['delivery_company', 'city', 'price']:
-        if 'delivery_company' not in request.json:
+        if it not in request.json:
             missing_info.append(it)
 
     # error response if data is missing
@@ -40,11 +36,11 @@ def delivery_time():
 
     # prepare query for model
 
-    company = request.json['delivery_company']
+    company = int(request.json['delivery_company'])
     city = request.json['city']
-    price = request.json['price']
+    price = float(request.json['price'])
 
-    # optional? FIXME
+    # optional? FIXME -> if not add to missing info loop
     category, subcategory = None, None
     if 'category' in request.json:
         category = request.json['category']
@@ -56,6 +52,7 @@ def delivery_time():
     else:
         subcategory = 'missing'
 
+    # TODO : A/B experiment -> if configured
     prediction = model.make_prediction(company, city, price, category, subcategory)
 
     return jsonify({
@@ -66,7 +63,14 @@ def delivery_time():
 
 @app.route('/api/history', methods=['GET'])
 def delivery_time_history():
-    history = model.get_predictions()
+    history = model.get_predictions_history()
+
+    return history.to_json(orient='records'), 200
+
+
+@app.route('/api/summary', methods=['GET'])
+def delivery_time_summary():
+    history = model.get_predictions_comparison()
 
     return history.to_json(orient='records'), 200
 

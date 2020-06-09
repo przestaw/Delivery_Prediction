@@ -1,5 +1,6 @@
 import pandas as pd
 import xgboost as xgb
+import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import max_error, mean_absolute_error, mean_squared_error, auc
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, KFold
@@ -40,7 +41,7 @@ def train_model(target, data, model_type='xgb', random_seed=42, randomized=True)
     elif model_type == 'knn':
         model = KNeighborsRegressor()
         params = {
-            'n_neighbors': [3, 4, 5, 6, 8, 12, 15, 18, 22, 27, 32],
+            'n_neighbors': [i for i in range(2, 32)],
             'weights': ['uniform', 'distance'],
             'algorithm': ['ball_tree', 'kd_tree'],
         }

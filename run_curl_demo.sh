@@ -21,3 +21,7 @@ curl --header "Content-Type: application/json" \
 echo 'localhost:5000/api/history'
 
 curl -X GET localhost:5000/api/history
+
+echo 'localhost:5000/api/summary'
+
+curl -X GET localhost:5000/api/summary

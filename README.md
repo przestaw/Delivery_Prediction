@@ -13,6 +13,5 @@ The aim of this project was to invent and implement webservice for delivery time
 ## Features
 
 - model training
-- serving predictions *TODO*
-- A/B experiment *TODO*
-- model updates *TODO*
+- serving predictions by *flask* restful api
+- A/B experiment 

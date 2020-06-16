@@ -5,21 +5,25 @@ from data_loader import obtain_dataset_table, code_labels
 
 
 class ModelHolder:
-    def __init__(self):
-        self.dataset = obtain_dataset_table()
-        self.dataset, self.le_cat, self.le_subcat, self.le_city = code_labels(self.dataset)
-
-        target = self.dataset['delivery_total_time_hours']
-        data = self.dataset.drop(['delivery_total_time', 'delivery_total_time_hours'], axis=1)
+    def __init__(self, models, le_cat, le_subcat, le_city):
+        # self.dataset = obtain_dataset_table()
+        # self.dataset, self.le_cat, self.le_subcat, self.le_city = code_labels(self.dataset)
+        #
+        # target = self.dataset['delivery_total_time_hours']
+        # data = self.dataset.drop(['delivery_total_time', 'delivery_total_time_hours'], axis=1)
 
         # TODO : export models and load from args here ??
-        self.tree_model, _ = train_model(target, data, model_type='tree', randomized=True)
-        self.xgb_model, _ = train_model(target, data, model_type='xgb', randomized=True)
-        self.knn_model, _ = train_model(target, data, model_type='knn', randomized=True)
+        # self.tree_model, _ = train_model(target, data, model_type='tree', randomized=True)
+        # self.xgb_model, _ = train_model(target, data, model_type='xgb', randomized=True)
+        # self.knn_model, _ = train_model(target, data, model_type='knn', randomized=True)
+
+        self.le_cat, self.le_subcat, self.le_city = le_cat, le_subcat, le_city
+        self.models = models
 
         self.history = []
+        self.configure_ab(False, 0)
 
-    def make_prediction(self, company, city, price, category, subcategory, model='tree'):
+    def make_prediction(self, company, city, price, category, subcategory, model=0):
         query = np.array([np.nan, np.nan, np.nan, np.nan, np.nan])
 
         query[0] = company
@@ -28,19 +32,26 @@ class ModelHolder:
         query[3] = self.le_cat.transform([category])[0]
         query[4] = self.le_subcat.transform([subcategory])[0]
 
-        prediction = 0
+        # prediction = 0
+        #
+        # if model == 'tree':
+        #     prediction = self.tree_model.predict(query.reshape(1, -1))[0]
+        # elif model == 'xgb':
+        #     prediction = self.xgb_model.predict(query.reshape(1, -1))[0]
+        # elif model == 'knn':
+        #     prediction = self.knn_model.predict(query.reshape(1, -1))[0]
+        # else:
+        #     raise NotImplementedError
 
-        if model == 'tree':
-            prediction = self.tree_model.predict(query.reshape(1, -1))[0]
-        elif model == 'xgb':
-            prediction = self.xgb_model.predict(query.reshape(1, -1))[0]
-        elif model == 'knn':
-            prediction = self.knn_model.predict(query.reshape(1, -1))[0]
-        else:
-            raise NotImplementedError
+        model_id = self.def_mod
+
+        if self.ab:
+            model_id = np.random.randint(0, len(self.models))
+
+        prediction = self.models[model_id]['model'].predict(query.reshape(1, -1))[0]
 
         # logging, history [data collection]
-        self.history.append([company, city, price, category, subcategory, prediction, model])
+        self.history.append([company, city, price, category, subcategory, prediction, self.models[model_id]['name']])
 
         return prediction
 
@@ -62,9 +73,9 @@ class ModelHolder:
         data['category'] = self.le_cat.transform(data['category'])
         data['subcategory'] = self.le_subcat.transform(data['subcategory'])
 
-        df['xgb_predictions'] = self.xgb_model.predict(data)
-        df['tree_predictions'] = self.tree_model.predict(data)
-        df['knn_predictions'] = self.knn_model.predict(data)
+        for mod in self.models:
+            df[mod['name']] = mod['model'].predict(data)
+
         df['actual'] = np.nan  # to be filled in next step when appropriate
 
         return df
@@ -73,6 +84,6 @@ class ModelHolder:
         # TODO - as needed
         raise NotImplementedError
 
-    def configure_AB(self):
-        # TODO - what could be configured
-        raise NotImplementedError
+    def configure_ab(self, ab_state=False, def_model=0):
+        self.ab = ab_state
+        self.def_mod = def_model

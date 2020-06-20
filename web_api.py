@@ -98,11 +98,9 @@ def add_model():
     
     for model in model_holder.models:
         if request.json['name'] == model['name']:
-            model['model'] = load(request.json['filename']),
-            model['filename'] = request.json['filename']
             return jsonify({
-                'status': 'model replaced',
-                }), 200
+                'status': 'model with given name already exists',
+                }), 400
 
     model_holder.models.append({
         'name': request.json['name'],

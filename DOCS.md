@@ -90,7 +90,15 @@ Endpoints:
 
       Response:
       ```
-      {"authors":["Przemyslaw Stawczyk","Maciej Szulik"],"semester":"20L","status":"running","title":"Projekt z Inzynierii Uczenia Maszynowego"}
+      {
+        "authors": [
+          "Przemyslaw Stawczyk",
+          "Maciej Szulik"
+        ],
+        "semester": "20L",
+        "status": "running",
+        "title": "Projekt z Inzynierii Uczenia Maszynowego"
+      }
       ```
 
 1. `/api/prediction`
@@ -104,7 +112,13 @@ Endpoints:
       ```
       curl --header "Content-Type: application/json" \
       --request GET \
-      --data '{"delivery_company":"360", "city":"Warszawa", "price":10.23, "category":"Gry i konsole", "subcategory":"Gry na konsole"}' \
+      --data '{
+        "delivery_company":"360", 
+        "city":"Warszawa", 
+        "price":10.23, 
+        "category":"Gry i konsole", 
+        "subcategory":"Gry na konsole"
+        }' \
       http://localhost:5000/api/prediction
       ```
 
@@ -128,8 +142,35 @@ Endpoints:
 
         Response:
         ```
-        [{"delivery_company":360,"city":"Warszawa","price":10.23,"category":"Gry i konsole","subcategory":"Gry na konsole","prediction":48.0987319288,"model":"knn model"},{"delivery_company":360,"city":"Warszawa","price":10.2
-        3,"category":"Gry i konsole","subcategory":"Gry na konsole","prediction":48.0987319288,"model":"knn model"}]
+        [
+          {
+            "delivery_company": 360,
+            "city": "Warszawa",
+            "price": 10.23,
+            "category": "Gry i konsole",
+            "subcategory": "Gry na konsole",
+            "prediction": 50.1254427196,
+            "model": "knn model"
+          },
+          {
+            "delivery_company": 620,
+            "city": "Warszawa",
+            "price": 1011.11,
+            "category": "Telefony i akcesoria",
+            "subcategory": "Telefony stacjonarne",
+            "prediction": 47.3557808691,
+            "model": "knn model"
+          },
+          {
+            "delivery_company": 516,
+            "city": "Police",
+            "price": 351,
+            "category": "Komputery",
+            "subcategory": "Drukarki i skanery",
+            "prediction": 51.645048671,
+            "model": "knn model"
+          }
+        ]
         ```
 
 1. `/api/prediction/summary`
@@ -146,7 +187,38 @@ Endpoints:
 
       Response:
       ```
-      [{"delivery_company":360,"city":"Warszawa","price":10.23,"category":"Gry i konsole","subcategory":"Gry na konsole","tree model":49.2704201715,"knn model":48.0987319288,"xgb model":38.3298606873,"actual":null},{"delivery_company":360,"city":"Warszawa","price":10.23,"category":"Gry i konsole","subcategory":"Gry na konsole","tree model":49.2704201715,"knn model":48.0987319288,"xgb model":38.3298606873,"actual":null},{"delivery_company":360,"city":"Warszawa","price":10.23,"category":"Gry i konsole","subcategory":"Gry na konsole","tree model":49.2704201715,"knn model":48.0987319288,"xgb model":38.3298606873,"actual":null}]
+      [
+        {
+          "delivery_company": 360,
+          "city": "Warszawa",
+          "price": 10.23,
+          "category": "Gry i konsole",
+          "subcategory": "Gry na konsole",
+          "knn model": 50.1254427196,
+          "tree model": 46.5884026029,
+          "actual": null
+        },
+        {
+          "delivery_company": 620,
+          "city": "Warszawa",
+          "price": 1011.11,
+          "category": "Telefony i akcesoria",
+          "subcategory": "Telefony stacjonarne",
+          "knn model": 47.3557808691,
+          "tree model": 35.4989317762,
+          "actual": null
+        },
+        {
+          "delivery_company": 516,
+          "city": "Police",
+          "price": 351,
+          "category": "Komputery",
+          "subcategory": "Drukarki i skanery",
+          "knn model": 51.645048671,
+          "tree model": 72.7802102179,
+          "actual": null
+        }
+      ]
       ```
 
 1. `/api/prediction/models`
@@ -163,7 +235,10 @@ Endpoints:
 
         Response:
         ```
-        [{"name": "tree model", "filename": "tree_model.pkl"}, {"name": "knn model", "filename": "knn_model.pkl"}, {"name": "xgb model", "filename": "xgb_model.pkl"}]                                                        
+        [
+          {"name": "tree model", "filename": "tree_model.pkl"}, {"name": "knn model", "filename": "knn_model.pkl"},
+          {"name": "xgb model", "filename": "xgb_model.pkl"
+        ]                                                        
         ```
 
     - POST 
@@ -201,7 +276,10 @@ Endpoints:
 
         Response:
         ```
-        [ {"name": "tree model", "filename": "tree_model.pkl"}, {"name": "knn model", "filename": "knn_model.pkl"}, {"name": "xgb   model", "filename": "xgb_model.pkl"}, {"name": "tree 2", "filename": "tree_model.pkl"}  ]                                                    
+        [ 
+          {"name": "tree model", "filename": "tree_model.pkl"}, {"name": "knn model", "filename": "knn_model.pkl"}, 
+          {"name": "xgb   model", "filename": "xgb_model.pkl"}, {"name": "tree 2", "filename": "tree_model.pkl"}
+        ]                                                    
         ```
 
 
@@ -337,7 +415,15 @@ Pzygotowany został skrypt `run_curl_demo.sh`, który realizuje następujący sc
     Response:
 
     ```
-    {"authors":["Przemyslaw Stawczyk","Maciej Szulik"],"semester":"20L","status":"running","title":"Projekt z Inzynierii Uczenia Maszynowego"}
+    {
+      "authors": [
+        "Przemyslaw Stawczyk",
+        "Maciej Szulik"
+      ],
+      "semester": "20L",
+      "status": "running",
+      "title": "Projekt z Inzynierii Uczenia Maszynowego"
+    }
     ```
 
 1. Załadowanie modelu knn
@@ -378,7 +464,12 @@ Pzygotowany został skrypt `run_curl_demo.sh`, który realizuje następujący sc
     ```
     curl --header "Content-Type: application/json" \
     --request GET \
-    --data '{"delivery_company":"360", "city":"Warszawa", "price":10.23, "category":"Gry i konsole",  "subcategory":"Gry na konsole"}' \
+    --data '{
+      "delivery_company":"360",
+      "city":"Warszawa",
+      "price":10.23,
+      "category":"Gry i konsole", 
+      "subcategory":"Gry na konsole"}' \
     http://localhost:5000/api/prediction
     ```
 
@@ -447,7 +538,13 @@ Pzygotowany został skrypt `run_curl_demo.sh`, który realizuje następujący sc
     ```
     curl --header "Content-Type: application/json" \
     --request GET \
-    --data '{"delivery_company":"620", "city":"Warszawa", "price":1011.11, "category":"Telefony i akcesoria", "subcategory":"Telefony stacjonarne"}' \
+    --data '{
+      "delivery_company":"620",
+      "city":"Warszawa",
+      "price":1011.11,
+      "category":"Telefony i akcesoria",
+      "subcategory":"Telefony stacjonarne"
+    }' \
     http://localhost:5000/api/prediction
     ```
 
@@ -464,7 +561,13 @@ Pzygotowany został skrypt `run_curl_demo.sh`, który realizuje następujący sc
     ```
     curl --header "Content-Type: application/json" \
     --request GET \
-    --data '{"delivery_company": "516", "city":"Police", "price":351.0, "category":"Komputery", "subcategory":"Drukarki i skanery"}' \
+    --data '{
+      "delivery_company": "516",
+      "city":"Police",
+      "price":351.0,
+      "category":"Komputery",
+      "subcategory":"Drukarki i skanery"
+    }' \
     http://localhost:5000/api/prediction
 
     ```
@@ -519,7 +622,35 @@ Pzygotowany został skrypt `run_curl_demo.sh`, który realizuje następujący sc
     Response:
 
     ```
-    [{"delivery_company":360,"city":"Warszawa","price":10.23,"category":"Gry i konsole","subcategory":"Gry na konsole","prediction":50.1254427196,"model":"knn model"},{"delivery_company":620,"city":"Warszawa","price":1011.11,"category":"Telefony i akcesoria","subcategory":"Telefony stacjonarne","prediction":47.3557808691,"model":"knn model"},{"delivery_company":516,"city":"Police","price":351.0,"category":"Komputery","subcategory":"Drukarki i skanery","prediction":51.645048671,"model":"knn model"}]
+    [
+      {
+        "delivery_company": 360,
+        "city": "Warszawa",
+        "price": 10.23,
+        "category": "Gry i konsole",
+        "subcategory": "Gry na konsole",
+        "prediction": 50.1254427196,
+        "model": "knn model"
+      },
+      {
+        "delivery_company": 620,
+        "city": "Warszawa",
+        "price": 1011.11,
+        "category": "Telefony i akcesoria",
+        "subcategory": "Telefony stacjonarne",
+        "prediction": 47.3557808691,
+        "model": "knn model"
+      },
+      {
+        "delivery_company": 516,
+        "city": "Police",
+        "price": 351,
+        "category": "Komputery",
+        "subcategory": "Drukarki i skanery",
+        "prediction": 51.645048671,
+        "model": "knn model"
+      }
+    ]
     ```
 
 1. Uzyskanie podsumowania
@@ -533,5 +664,36 @@ Pzygotowany został skrypt `run_curl_demo.sh`, który realizuje następujący sc
     Response:
 
     ```
-    [{"delivery_company":360,"city":"Warszawa","price":10.23,"category":"Gry i konsole","subcategory":"Gry na konsole","knn model":50.1254427196,"tree model":46.5884026029,"actual":null},{"delivery_company":620,"city":"Warszawa","price":1011.11,"category":"Telefony i akcesoria","subcategory":"Telefony stacjonarne","knn model":47.3557808691,"tree model":35.4989317762,"actual":null},{"delivery_company":516,"city":"Police","price":351.0,"category":"Komputery","subcategory":"Drukarki i skanery","knn model":51.645048671,"tree model":72.7802102179,"actual":null}]
+    [
+      {
+        "delivery_company": 360,
+        "city": "Warszawa",
+        "price": 10.23,
+        "category": "Gry i konsole",
+        "subcategory": "Gry na konsole",
+        "knn model": 50.1254427196,
+        "tree model": 46.5884026029,
+        "actual": null
+      },
+      {
+        "delivery_company": 620,
+        "city": "Warszawa",
+        "price": 1011.11,
+        "category": "Telefony i akcesoria",
+        "subcategory": "Telefony stacjonarne",
+        "knn model": 47.3557808691,
+        "tree model": 35.4989317762,
+        "actual": null
+      },
+      {
+        "delivery_company": 516,
+        "city": "Police",
+        "price": 351,
+        "category": "Komputery",
+        "subcategory": "Drukarki i skanery",
+        "knn model": 51.645048671,
+        "tree model": 72.7802102179,
+        "actual": null
+      }
+    ]
     ```

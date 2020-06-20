@@ -38,7 +38,7 @@ def delivery_time():
         return jsonify({
             'status': 'missing information',
             'missing': str(missing_info)
-        }), 418  # TODO remove joke
+        }), 400
 
     # prepare query for model
 
@@ -92,7 +92,7 @@ def add_model():
         return jsonify({
             'status': 'missing information',
             'missing': str(missing_info)
-        }), 418  # TODO remove joke
+        }), 400  
     
     for model in model_holder.models:
         if request.json['name'] == model['name']:
@@ -128,7 +128,7 @@ def set_AB_status():
         return jsonify({
             'status': 'missing information',
             'missing': str(missing_info)
-        }), 418  # TODO remove joke    
+        }), 400  
     
     model_holder.ab = bool(request.json["active"])
     return jsonify({'status': 'ok', 'active': model_holder.ab}), 200   
@@ -155,7 +155,7 @@ def set_AB_models():
         return jsonify({
             'status': 'missing information',
             'missing': str(missing_info)
-        }), 418  # TODO remove joke    
+        }), 400
     
     errors = []
     if not model_holder.set_new_model(request.json['A']):
@@ -167,7 +167,7 @@ def set_AB_models():
         return jsonify({
             'status': 'missing model(s)',
             'missing': str(errors)
-        }), 418  # TODO remove joke    
+        }), 400    
     
     return jsonify({'status': 'ok', 'active': model_holder.ab}), 200   
 

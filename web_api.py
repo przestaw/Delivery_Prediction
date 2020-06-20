@@ -3,15 +3,17 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeRegressor
 from xgboost import XGBRegressor
 from data_loader import obtain_dataset_table, code_labels
-from model import ModelHolder
+from model_holder import ModelHolder
+from model_files_manager import load
+import json
 
 app = Flask(__name__)
 
-model = None
+model_holder = None
 
 
 @app.route('/', methods=['GET'])
-@app.route('/name', methods=['GET'])
+@app.route('/api/info', methods=['GET'])
 def name():
     return jsonify({
         'title': 'Projekt z Inzynierii Uczenia Maszynowego',
@@ -21,7 +23,7 @@ def name():
     }), 200
 
 
-@app.route('/api', methods=['GET'])
+@app.route('/api/prediction', methods=['GET'])
 def delivery_time():
     if not request.json:
         abort(400)
@@ -47,7 +49,7 @@ def delivery_time():
     category = request.json['category']
     subcategory = request.json['subcategory']
 
-    prediction = model.make_prediction(company, city, price, category, subcategory)
+    prediction = model_holder.make_prediction(company, city, price, category, subcategory)
 
     return jsonify({
         'prediction': prediction,
@@ -55,64 +57,128 @@ def delivery_time():
     }), 200
 
 
-@app.route('/api/history', methods=['GET'])
+
+@app.route('/api/prediction/history', methods=['GET'])
 def delivery_time_history():
-    history = model.get_predictions_history()
+    history = model_holder.get_predictions_history()
 
     return history.to_json(orient='records'), 200
 
 
-@app.route('/api/summary', methods=['GET'])
+@app.route('/api/prediction/summary', methods=['GET'])
 def delivery_time_summary():
-    history = model.get_predictions_comparison()
+    history = model_holder.get_predictions_comparison()
 
     return history.to_json(orient='records'), 200
 
+@app.route('/api/prediction/models', methods=['GET'])
+def get_models():
+    models = model_holder.models
+    output = [{'name': model['name'], 'filename': model['filename']} for model in models]
+
+    return json.dumps(output), 200
+
+@app.route('/api/prediction/models', methods=['POST'])
+def add_model():
+    if not request.json:
+        abort(400)
+    missing_info = []
+    for it in ['name', 'filename']:
+        if it not in request.json:
+            missing_info.append(it)
+
+    # error response if data is missing
+    if len(missing_info) > 0:
+        return jsonify({
+            'status': 'missing information',
+            'missing': str(missing_info)
+        }), 418  # TODO remove joke
+    
+    for model in model_holder.models:
+        if request.json['name'] == model['name']:
+            model['model'] = load(request.json['filename']),
+            model['filename'] = request.json['filename']
+            return jsonify({
+                'status': 'model replaced',
+                }), 200
+
+    model_holder.models.append({
+        'name': request.json['name'],
+        'model': load(request.json['filename']),
+        'filename': request.json['filename']
+    })
+
+    return jsonify({'status': 'model added'}), 200
+
+@app.route('/api/prediction/AB', methods=['GET'])
+def get_AB_status():
+    return jsonify({'status': 'ok', 'active': model_holder.ab}), 200
+
+@app.route('/api/prediction/AB', methods=['POST'])
+def set_AB_status():
+    if not request.json:
+        abort(400)
+    missing_info = []
+    for it in ['active']:
+        if it not in request.json:
+            missing_info.append(it)
+
+    # error response if data is missing
+    if len(missing_info) > 0:
+        return jsonify({
+            'status': 'missing information',
+            'missing': str(missing_info)
+        }), 418  # TODO remove joke    
+    
+    model_holder.ab = bool(request.json["active"])
+    return jsonify({'status': 'ok', 'active': model_holder.ab}), 200   
+
+@app.route('/api/prediction/AB/models', methods=['GET'])
+def get_AB_models():
+    return jsonify({'status': 'ok', 'models':
+    {
+        'A': model_holder.models[model_holder.new_mod]['name'],
+        'B': model_holder.models[model_holder.def_mod]['name']
+    }}), 200
+
+@app.route('/api/prediction/AB/models', methods=['POST'])
+def set_AB_models():
+    if not request.json:
+        abort(400)
+    missing_info = []
+    for it in ['A', 'B']:
+        if it not in request.json:
+            missing_info.append(it)
+
+    # error response if data is missing
+    if len(missing_info) > 0:
+        return jsonify({
+            'status': 'missing information',
+            'missing': str(missing_info)
+        }), 418  # TODO remove joke    
+    
+    errors = []
+    if not model_holder.set_new_model(request.json['A']):
+        errors.append("cannot set model A, model with given name does not exist")
+    if not model_holder.set_default_model(request.json['B']):
+        errors.append("cannot set model B, model with given name does not exist")
+    # error response if data is missing
+    if len(errors) > 0:
+        return jsonify({
+            'status': 'missing model(s)',
+            'missing': str(errors)
+        }), 418  # TODO remove joke    
+    
+    return jsonify({'status': 'ok', 'active': model_holder.ab}), 200   
 
 if __name__ == '__main__':
     dataset = obtain_dataset_table()
     dataset, le_cat, le_subcat, le_city = code_labels(dataset)
 
-    target = dataset['delivery_total_time_hours']
-    data = dataset.drop(['delivery_total_time', 'delivery_total_time_hours'], axis=1)
-    data = data[['delivery_company', 'city', 'price', 'category', 'subcategory']]
-
-    ## TODO : export models and load from args here ??
-    # tree_model, _ = train_model(target, data, model_type='tree', randomized=True)
-    # xgb_model, _ = train_model(target, data, model_type='xgb', randomized=True)
-    # knn_model, _ = train_model(target, data, model_type='knn', randomized=True)
-
-    tree_model = DecisionTreeRegressor(criterion='friedman_mse',
-                                       max_depth=7,
-                                       min_samples_leaf=4,
-                                       min_samples_split=2,
-                                       random_state=42,
-                                       splitter='random')
-    tree_model.fit(X=data, y=target)
-
-    knn_model = KNeighborsRegressor(algorithm='ball_tree',
-                                    n_neighbors=26,
-                                    weights='distance')
-    knn_model.fit(X=data, y=target)
-
-    # xgb_model = XGBRegressor()
-    # xgb_model.set_params(params={'eval_metric': 'rmse',
-    #                              'learning_rate': 0.05,
-    #                              'max_depth': 5,
-    #                              'min_child_weight': 7,
-    #                              'n_estimators': 100,
-    #                              'objective': 'reg:squarederror',
-    #                              'seed': 42,
-    #                              'silent': 1})
-    # xgb_model.fit(X=data, y=target)
-    # FIXME : watafak xgboost
-    #         ValueError: feature_names mismatch: ['delivery_company', 'city', 'price', 'category', 'subcategory'] ['f0', 'f1', 'f2', 'f3', 'f4']
-    #         expected city, price, category, subcategory, delivery_company in input data
-
-    models = [{'name': 'tree model', 'model': tree_model},
-              # {'name': 'xgb model', 'model': xgb_model},
-              {'name': 'knn model', 'model': knn_model}]
-    model = ModelHolder(models, le_cat, le_subcat, le_city)
-    model.configure_ab(True, 0)
+    models = [
+    {'name': 'tree model', 'model': load("tree_model.pkl"), 'filename': "tree_model.pkl"},
+    {'name': 'knn model', 'model': load("knn_model.pkl"), 'filename': "knn_model.pkl"},
+    {'name': 'xgb model','model': load("xgb_model.pkl"), 'filename': "xgb_model.pkl"}]
+    model_holder = ModelHolder(models, le_cat, le_subcat, le_city)
 
     app.run(debug=False)

@@ -12,6 +12,7 @@ class ModelHolder:
         # target = self.dataset['delivery_total_time_hours']
         # data = self.dataset.drop(['delivery_total_time', 'delivery_total_time_hours'], axis=1)
 
+        
         # TODO : export models and load from args here ??
         # self.tree_model, _ = train_model(target, data, model_type='tree', randomized=True)
         # self.xgb_model, _ = train_model(target, data, model_type='xgb', randomized=True)
@@ -19,9 +20,11 @@ class ModelHolder:
 
         self.le_cat, self.le_subcat, self.le_city = le_cat, le_subcat, le_city
         self.models = models
+        self.def_mod = 0
+        self.new_mod = 0
+        self.ab = False
 
         self.history = []
-        self.configure_ab(False, 0)
 
     def make_prediction(self, company, city, price, category, subcategory, model=0):
         query = np.array([np.nan, np.nan, np.nan, np.nan, np.nan])
@@ -46,7 +49,10 @@ class ModelHolder:
         model_id = self.def_mod
 
         if self.ab:
-            model_id = np.random.randint(0, len(self.models))
+            if np.random.randint(0, 1):
+                model_id = self.def_mod
+            else:
+                model_id: self.new_mod
 
         prediction = self.models[model_id]['model'].predict(query.reshape(1, -1))[0]
 
@@ -83,7 +89,19 @@ class ModelHolder:
     def update_model(self):
         # TODO - as needed
         raise NotImplementedError
+  
+    def set_default_model(self, name):
+        for i in range(0, len(self.models)):
+            if self.models[i]['name'] == name:
+                self.def_mod = i
+                return True
+        return False
 
-    def configure_ab(self, ab_state=False, def_model=0):
-        self.ab = ab_state
-        self.def_mod = def_model
+    def set_new_model(self, name):
+        for i in range(0, len(self.models)):
+            if self.models[i]['name'] == name:
+                self.new_mod = i
+                return True
+        return False
+
+

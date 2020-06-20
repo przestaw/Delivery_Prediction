@@ -78,10 +78,12 @@ def get_models():
 
     return json.dumps(output), 200
 
+
 @app.route('/api/prediction/models', methods=['POST'])
 def add_model():
     if not request.json:
         abort(400)
+
     missing_info = []
     for it in ['name', 'filename']:
         if it not in request.json:
@@ -109,6 +111,44 @@ def add_model():
     })
 
     return jsonify({'status': 'model added'}), 200
+
+
+
+@app.route('/api/prediction/models/active', methods=['GET'])
+def get_active_model():
+    model = model_holder.models[model_holder.def_mod]
+    output = {'name': model['name'], 'filename': model['filename']}
+
+    return json.dumps(output), 200
+
+@app.route('/api/prediction/models/active', methods=['POST'])
+def set_active_model():
+    if not request.json:
+        abort(400)
+    missing_info = []
+    for it in ['name']:
+        if it not in request.json:
+            missing_info.append(it)
+
+    # error response if data is missing
+    if len(missing_info) > 0:
+        return jsonify({
+            'status': 'missing information',
+            'missing': str(missing_info)
+        }), 400
+    
+    errors = []
+    if not model_holder.set_default_model(request.json['name']):
+        errors.append("cannot set model B, model with given name does not exist")
+    # error response if data is missing
+    if len(errors) > 0:
+        return jsonify({
+            'status': 'missing model(s)',
+            'missing': str(errors)
+        }), 400    
+    
+    return jsonify({'status': 'model changed'}), 200   
+
 
 @app.route('/api/prediction/AB', methods=['GET'])
 def get_AB_status():
@@ -175,10 +215,10 @@ if __name__ == '__main__':
     dataset = obtain_dataset_table()
     dataset, le_cat, le_subcat, le_city = code_labels(dataset)
 
-    models = [
-    {'name': 'tree model', 'model': load("tree_model.pkl"), 'filename': "tree_model.pkl"},
-    {'name': 'knn model', 'model': load("knn_model.pkl"), 'filename': "knn_model.pkl"},
-    {'name': 'xgb model','model': load("xgb_model.pkl"), 'filename': "xgb_model.pkl"}]
-    model_holder = ModelHolder(models, le_cat, le_subcat, le_city)
+    # models = [
+    # {'name': 'tree model', 'model': load("tree_model.pkl"), 'filename': "tree_model.pkl"},
+    # {'name': 'knn model', 'model': load("knn_model.pkl"), 'filename': "knn_model.pkl"},
+    # {'name': 'xgb model','model': load("xgb_model.pkl"), 'filename': "xgb_model.pkl"}]
+    model_holder = ModelHolder([], le_cat, le_subcat, le_city)
 
     app.run(debug=False)

@@ -203,6 +203,44 @@ Endpoints:
 
 
 
+1. `/api/prediction/models/active`
+  - GET 
+
+    Zwraca informacje dotyczące aktywnego modelu.
+
+    **Przykład**
+
+    Request:
+
+    ```
+    curl -X GET localhost:5000/api/prediction/models/active
+    ```
+
+    Response:
+
+    ```
+    {"name": "tree model", "filename": "tree_model.pkl"}                                                     
+    ```
+
+  - POST 
+    Pozwala zmienić aktywny model.
+
+    **Przykład**
+
+    Request:
+
+    ```
+    curl --header "Content-Type: application/json" --request POST  \ 
+    --data '{"name": "tree model"}' \
+    http://localhost:5000/api/prediction/models/active
+    ```
+
+    Response:
+    ```
+    {"status":"model changed"}
+    ```
+
+
 1. `/api/prediction/AB`
   - GET 
 
@@ -283,4 +321,190 @@ Endpoints:
 
 ## Demo
 
-Przykłady zawarte w opisie API pozwalają na zapoznanie się z możliwościami naszego API i pokazaniem, że implementacja działa. Dodatkowo przygotowany został skrypt `run_curl_demo.sh`, który odpowiada powyższym przykładom.
+Pzygotowany został skrypt `run_curl_demo.sh`, który odpowiada powyższym przykładom i realizuje następujący scenariusz:
+
+1. Wyświetlenie informacji o projekcie
+  
+  Request:
+  ```
+  curl -X GET localhost:5000/api/info
+  ```
+
+  Response:
+  ```
+  {"authors":["Przemyslaw Stawczyk","Maciej Szulik"],"semester":"20L","status":"running","title":"Projekt z Inzynierii Uczenia Maszynowego"}
+  ```
+
+1. Załadowanie modelu knn
+ 
+  Request:
+  ```
+  curl --header "Content-Type: application/json" \
+  --request POST  \
+  --data '{"name": "knn model", "filename": "knn_model.pkl"}' \
+  http://localhost:5000/api/prediction/models
+  ```
+
+  Response:
+  ```
+  {"status":"model added"}
+  ```
+
+1. Wyświetlenie listy modeli
+ 
+  Request:
+  ```
+  curl -X GET localhost:5000/api/prediction/models  
+  ```
+
+  Response:
+  ```
+  [{"name": "knn model", "filename": "knn_model.pkl"}]
+  ```
+
+1. Uzyskanie predykcji
+ 
+  Request:
+  ```
+  curl --header "Content-Type: application/json" \
+  --request GET \
+  --data '{"delivery_company":"360", "city":"Warszawa", "price":10.23, "category":"Gry i konsole",  "subcategory":"Gry na konsole"}' \
+  http://localhost:5000/api/prediction
+  ```
+
+  Response:
+  ```
+  {"prediction":50.125442719602574,"status":"running"}
+  ```
+
+1. Załadowanie modelu tree
+ 
+  Request:
+  ```
+  curl --header "Content-Type: application/json" \
+  --request POST  \
+  --data '{"name": "tree model", "filename": "tree_model.pkl"}' \
+  http://localhost:5000/api/prediction/models
+  curl -X GET localhost:5000/api/prediction/models  
+  ```
+
+  Response:
+  ```
+  {"status":"model added"}
+  ```
+
+1. Ustawienie eksperymentu A/B, A jako nowy model tree i B jako stary knn
+ 
+  Request:
+  ```
+  curl --header "Content-Type: application/json" \
+  --request POST  \
+  --data '{"A": "tree model", "B": "knn model"}' \
+  http://localhost:5000/api/prediction/AB/models
+
+  ```
+
+  Response:
+  ```
+  {"active":false,"status":"ok"}
+  ```
+
+1. Aktywowanie eksperymentu A/B
+ 
+  Request:
+  ```
+  curl --header "Content-Type: application/json" \
+  --request POST  \
+  --data '{"active": true}' \
+  http://localhost:5000/api/prediction/AB
+  ```
+
+  Response:
+  ```
+  {"active":true,"status":"ok"}
+  ```
+
+1. Uzyskanie predykcji
+ 
+  Request:
+  ```
+  curl --header "Content-Type: application/json" \
+  --request GET \
+  --data '{"delivery_company":"620", "city":"Warszawa", "price":1011.11, "category":"Telefony i akcesoria", "subcategory":"Telefony stacjonarne"}' \
+  http://localhost:5000/api/prediction
+  ```
+
+  Response:
+  ```
+  {"prediction":47.35578086913101,"status":"running"}
+  ```
+
+1. Uzyskanie predykcji
+
+  Request:
+  ```
+  curl --header "Content-Type: application/json" \
+  --request GET \
+  --data '{"delivery_company": "516", "city":"Police", "price":351.0, "category":"Komputery", "subcategory":"Drukarki i skanery"}' \
+  http://localhost:5000/api/prediction
+
+  ```
+
+  Response:
+  ```
+  {"prediction":51.64504867097814,"status":"running"}
+  ```
+
+1. Wyłaczenie eksperymentu A/B
+ 
+  Request:
+  ```
+  echo '# deactivate A/B'
+  curl --header "Content-Type: application/json" --request POST  \
+  --data '{"active": false}' \
+  http://localhost:5000/api/prediction/AB
+  ```
+
+  Response:
+  ```
+  {"active":false,"status":"ok"}
+  ```
+
+1. Ustawienie modelu tree na aktywny
+ 
+  Request:
+  ```
+  curl --header "Content-Type: application/json" --request POST  \
+  --data '{"name": "tree model"}' \
+  http://localhost:5000/api/prediction/models/active
+  ```
+
+  Response:
+  ```
+  {"status":"model changed"}
+  ```
+
+1. Uzyskanie historii 
+ 
+  Request:
+  ```
+  curl -X GET localhost:5000/api/prediction/history
+  ```
+
+  Response:
+  ```
+  [{"delivery_company":360,"city":"Warszawa","price":10.23,"category":"Gry i konsole","subcategory":"Gry na konsole","prediction":50.1254427196,"model":"knn model"},{"delivery_company":620,"city":"Warszawa","price":1011.11,"category":"Telefony i akcesoria","subcategory":"Telefony stacjonarne","prediction":47.3557808691,"model":"knn model"},{"delivery_company":516,"city":"Police","price":351.0,"category":"Komputery","subcategory":"Drukarki i skanery","prediction":51.645048671,"model":"knn model"}]
+  ```
+
+1. Uzyskanie podsumowania
+
+ 
+  Request:
+  ```
+  curl -X GET localhost:5000/api/prediction/summary   
+  ```
+
+  Response:
+  ```
+  [{"delivery_company":360,"city":"Warszawa","price":10.23,"category":"Gry i konsole","subcategory":"Gry na konsole","knn model":50.1254427196,"tree model":46.5884026029,"actual":null},{"delivery_company":620,"city":"Warszawa","price":1011.11,"category":"Telefony i akcesoria","subcategory":"Telefony stacjonarne","knn model":47.3557808691,"tree model":35.4989317762,"actual":null},{"delivery_company":516,"city":"Police","price":351.0,"category":"Komputery","subcategory":"Drukarki i skanery","knn model":51.645048671,"tree model":72.7802102179,"actual":null}]
+  ```

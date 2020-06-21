@@ -52,7 +52,7 @@ Moduł pozwala tworzyć modele, wyliczać dla nich statystyki, porównywać je i
 
 ### model_files_manager.py
 
-Moduł odpowiada za zapisywanie i ładowanie modeli do/z pliku `.pkl`.
+Moduł odpowiada za zapisywanie i ładowanie modeli do/z pliku `.pkl` znajdującego się w podkatalogu `models`.
 
 ### models_creator.py
 
@@ -70,7 +70,13 @@ Moduł wystawia API do uzyskiwania predykcji, ich historii, statystyk, a także 
 
 API zostało stworzone przy użyciu frameworku Flask i jest domyślnie wystawione na porcie 5000.
 
-Endpoints:
+### Uruchomienie
+
+```
+python3 web_api.py
+```
+
+### Endpoints:
 
 1. `/api/info`
     - GET
